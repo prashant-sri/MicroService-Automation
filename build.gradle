@@ -1,0 +1,39 @@
+plugins {
+    id 'java'
+}
+
+group 'org.demo.bdd'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    cucumberRuntime {
+        extendsFrom testImplementation
+    }
+}
+
+dependencies {
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:5.3.1"
+    testImplementation "io.cucumber:cucumber-java:6.2.2"
+    testImplementation "io.cucumber:cucumber-junit:6.2.2"
+    testImplementation "io.rest-assured:rest-assured:3.3.0"
+    testImplementation "com.jayway.jsonpath:json-path:2.4.0"
+
+}
+
+task cucumber() {
+    dependsOn assemble, compileTestJava
+    doLast {
+        mkdir 'build/test-results/'
+        javaexec {
+            main = "io.cucumber.core.cli.Main"
+            classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+            args = ['--plugin', 'pretty', '--plugin', 'html:build/test-results/functional.html', '--plugin', 'junit:build/test-results/functional.xml','--tags', '@healthcheck', '--glue', 'steps', 'src/test/resources']
+        }
+    }
+}
